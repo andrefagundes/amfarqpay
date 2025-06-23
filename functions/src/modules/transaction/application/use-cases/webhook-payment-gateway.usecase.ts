@@ -26,21 +26,13 @@ export class WebhookPaymentGatewayUseCase {
     amount: number
     rawPayload?: any
   }) {
-    await this.webhookEventRepo.log(
-      new WebhookEvent(
-        null,
-        input.rawPayload || input,
-        new Date(),
-        input.status,
-      ),
-    )
-
-    const transaction = await this.transactionRepo.findById(
-      input.transaction_id,
-    )
-    if (!transaction) throw new NotFoundError('Transação não encontrada')
-
+    let logEventType = input.status as string
     try {
+      const transaction = await this.transactionRepo.findById(
+        input.transaction_id,
+      )
+      if (!transaction) throw new NotFoundError('Transação não encontrada')
+
       this.validateTransactionAmount(transaction, input.amount)
       transaction.updateStatus(input.status)
 
@@ -59,7 +51,24 @@ export class WebhookPaymentGatewayUseCase {
       }
 
       await this.transactionRepo.update(transaction)
-    } catch (error) {
+
+      await this.webhookEventRepo.log(
+        new WebhookEvent(
+          null,
+          input.rawPayload || input,
+          new Date(),
+          logEventType,
+        ),
+      )
+    } catch (error: any) {
+      logEventType = 'error'
+      const errorPayload = {
+        ...(input.rawPayload || input),
+        error: error?.message || 'Erro desconhecido',
+      }
+      await this.webhookEventRepo.log(
+        new WebhookEvent(null, errorPayload, new Date(), logEventType),
+      )
       if (
         error instanceof BadRequestError ||
         error instanceof NotFoundError ||
