@@ -1,0 +1,6 @@
+{
+  "include": [
+    ".eslintrc.json",
+    "src/**/*.ts"
+  ]
+}

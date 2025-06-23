@@ -1,0 +1,287 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MarlimPay API",
+    "version": "1.0.0",
+    "description": "API REST para simulação de transações financeiras entre usuários com suporte a idempotência, webhook e rate limit."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5001/marlimpay-api-v1/us-central1/api",
+      "description": "Servidor local"
+    },
+    {
+      "url": "https://us-central1-marlimpay-api-v1.cloudfunctions.net/api",
+      "description": "Servidor de produção"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token de autenticação Bearer. Use o ID do usuário como token."
+      }
+    },
+    "schemas": {
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Verifica se a API está no ar",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "API está funcionando corretamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  },
+                  "example": {
+                    "success": true,
+                    "message": "API is running",
+                    "timestamp": "2025-06-21T20:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "Criar novo usuário",
+        "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "Maria Silva",
+                "email": "maria@example.com",
+                "balance": 1000.0
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso"
+          },
+          "401": {
+            "description": "Token de autenticação inválido ou ausente"
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Buscar usuário por ID",
+        "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário encontrado"
+          },
+          "401": {
+            "description": "Token de autenticação inválido ou ausente"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualizar usuário",
+        "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "Maria da Silva",
+                "email": "mariads@example.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado"
+          },
+          "401": {
+            "description": "Token de autenticação inválido ou ausente"
+          }
+        }
+      }
+    },
+    "/users/{user_id}/transactions": {
+      "get": {
+        "summary": "Listar transações de um usuário",
+        "tags": ["Users"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de transações"
+          },
+          "401": {
+            "description": "Token de autenticação inválido ou ausente"
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "post": {
+        "summary": "Criar nova transação",
+        "tags": ["Transactions"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "payer_id": "user_123",
+                "receiver_id": "user_456",
+                "amount": 150.75
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transação criada com sucesso"
+          },
+          "401": {
+            "description": "Token de autenticação inválido ou ausente"
+          },
+          "409": {
+            "description": "Idempotency-Key já utilizada"
+          },
+          "429": {
+            "description": "Rate limit exceeded - máximo 5 transações por minuto por usuário"
+          }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "summary": "Buscar transação por ID",
+        "tags": ["Transactions"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transação encontrada"
+          },
+          "401": {
+            "description": "Token de autenticação inválido ou ausente"
+          },
+          "404": {
+            "description": "Transação não encontrada"
+          }
+        }
+      }
+    },
+    "/transactions/webhook/payment-gateway": {
+      "post": {
+        "summary": "Webhook de confirmação de pagamento",
+        "tags": ["Webhook"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "transaction_id": "abc123",
+                "status": "approved",
+                "amount": 100.5
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processado"
+          }
+        }
+      }
+    }
+  }
+}
