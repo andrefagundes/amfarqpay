@@ -12,6 +12,7 @@ export class FirestoreWebhookEventRepository
       payload: event.payload,
       receivedAt: event.receivedAt.toISOString(),
       eventType: event.eventType || null,
+      msg: event.msg || null,
     })
   }
 }

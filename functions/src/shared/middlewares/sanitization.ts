@@ -6,21 +6,21 @@ export const sanitizationMiddleware = (
   next: NextFunction,
 ) => {
   if (req.body) {
-    req.body = sanitizeObject(req.body)
+    req.body = sanitizeObject(req.body) as typeof req.body
   }
 
   if (req.query) {
-    req.query = sanitizeObject(req.query)
+    req.query = sanitizeObject(req.query) as typeof req.query
   }
 
   if (req.params) {
-    req.params = sanitizeObject(req.params)
+    req.params = sanitizeObject(req.params) as typeof req.params
   }
 
   next()
 }
 
-function sanitizeObject(obj: any): any {
+function sanitizeObject(obj: unknown): unknown {
   if (typeof obj === 'string') {
     return sanitizeString(obj)
   }
@@ -30,7 +30,7 @@ function sanitizeObject(obj: any): any {
   }
 
   if (obj && typeof obj === 'object') {
-    const sanitized: any = {}
+    const sanitized: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(obj)) {
       sanitized[key] = sanitizeObject(value)
     }

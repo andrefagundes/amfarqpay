@@ -5,13 +5,11 @@ import { CreateTransactionUseCase } from '../../../application/use-cases/create-
 import { GetTransactionUseCase } from '../../../application/use-cases/get-transaction.usecase'
 import { WebhookPaymentGatewayUseCase } from '../../../application/use-cases/webhook-payment-gateway.usecase'
 import { ITransactionRepository } from '../../../domain/repositories/transaction.repository.interface'
-import { FirestoreWebhookEventRepository } from '../../../infrastructure/database/firestore/webhook-event.repository'
 
 export class TransactionController {
   constructor(
     private readonly transactionRepository: ITransactionRepository,
     private readonly userRepository: IUserRepository,
-    private readonly webhookEventRepository: FirestoreWebhookEventRepository,
   ) {}
 
   async create(req: Request, res: Response) {
@@ -36,7 +34,6 @@ export class TransactionController {
     const useCase = new WebhookPaymentGatewayUseCase(
       this.transactionRepository,
       this.userRepository,
-      this.webhookEventRepository,
     )
     await useCase.execute({ ...req.body, rawPayload: req.body })
     res.success({ message: 'Webhook recebido com sucesso' })

@@ -6,9 +6,12 @@ import helmet from 'helmet'
 import './config/firebase'
 import { transactionRoutes } from './modules/transaction/presentation/http/routes/transaction.routes'
 import { userRoutes } from './modules/user/presentation/http/routes/user.routes'
+import { initializeEvents } from './shared/events/init-events'
 import { errorHandler } from './shared/middlewares/error-handler'
 import { responseHandler } from './shared/middlewares/response-handler'
 import { sanitizationMiddleware } from './shared/middlewares/sanitization'
+
+initializeEvents()
 
 const app = express()
 
