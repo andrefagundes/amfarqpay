@@ -1,4 +1,4 @@
-# MarlimPay API
+# API
 
 API REST para simulação de transações financeiras entre usuários, com suporte a idempotência, webhooks, rate limit, autenticação e documentação Swagger.
 
