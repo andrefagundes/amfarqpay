@@ -17,14 +17,16 @@ const app = express()
 
 app.use(
   helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: false, // não precisa de CSP em API
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
     hsts: {
-      maxAge: 31536000,
+      maxAge: 31536000, // 1 ano
       includeSubDomains: true,
       preload: true,
     },
+    referrerPolicy: { policy: "no-referrer" },
+    frameguard: { action: "deny" },
   })
 )
 
